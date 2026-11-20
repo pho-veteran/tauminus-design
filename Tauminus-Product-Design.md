@@ -1,8 +1,15 @@
 # Tauminus — Đặc tả chức năng
 
-Tauminus là workspace terminal dành cho lập trình với AI coding agent trên nhiều máy. Sản phẩm kết hợp quản lý kết nối, project, terminal, agent, file, thay đổi mã, dịch vụ và cộng tác trên desktop và mobile.
+Tauminus là workspace terminal dành cho lập trình với AI coding agent trên nhiều máy. Trên desktop, người dùng có thể mở shell trên máy đang dùng ngay rồi thêm host SSH khi cần. Host, project, terminal, agent, file, thay đổi mã và dịch vụ dùng chung một workspace. Mobile là client để làm việc với các phiên chạy trên máy tính hoặc host từ xa.
 
-Tài liệu mô tả chức năng và quy tắc hoạt động cần có của sản phẩm; không xác nhận tình trạng triển khai.
+Các mục chức năng dưới đây mô tả hành vi sản phẩm, gồm cả các yêu cầu ngoài phạm vi bản xem trước. Mục cuối mô tả riêng những gì mockup trình duyệt thể hiện và giới hạn của mô phỏng.
+
+## Khởi động và màn hình Start
+
+- Desktop nhận diện máy đang dùng dưới tên **This computer**. Khi chưa có workspace đã lưu, chuẩn bị shell mặc định trong thư mục home và hiện **Start**. Người dùng có thể vào shell local ngay, không cần tài khoản dịch vụ, host SSH hay cài runtime.
+- Start có bốn lối vào: **Open local terminal**, **Connect host**, **Open project** và **Resume session**. Danh sách project gần đây hiện host và đường dẫn. Danh sách phiên agent gần đây hiện host, trạng thái và thời điểm cập nhật. Chọn một mục chuyển tới đúng ngữ cảnh hoặc attach phiên còn tồn tại.
+- Tùy chọn khởi động gồm **Restore last workspace** (mặc định), **New local terminal** và **Host tools**. Khôi phục workspace thành công thì bỏ qua Start. Nếu chưa có workspace đã lưu, Start vẫn hiện. Ở các lần khởi động khác, dùng thiết lập **Show at startup**. Có thể mở lại Start từ menu ứng dụng.
+- Sau khi vào terminal local lần đầu trên desktop, gợi ý kết nối SSH hoặc mở project có thể bỏ qua. Host tools là cửa vào quản lý cấu hình, truyền file và các công cụ host khi người dùng cần.
 
 ## 1. Đối tượng và quan hệ
 
@@ -10,7 +17,9 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 |---|---|
 | Host | Máy local hoặc máy từ xa; có cấu hình kết nối, identity, shell mặc định, runtime và các project. |
 | Project | Thư mục làm việc trên một host; chứa các tab và ngữ cảnh file, Git, dịch vụ. |
-| Tab | Terminal, coding agent, web preview hoặc trang cấu hình liên quan; thuộc một project. |
+| Tab | Terminal, coding agent hoặc web preview thuộc một project. |
+| Runtime | Cách tiến trình của phiên được duy trì, ví dụ shell trực tiếp, tmux hoặc Herdr Core. Host có thể có nhiều runtime. |
+| Phiên khám phá được | Phiên tmux hoặc Herdr đã có trên host, có thể xuất hiện trước khi được gán vào project hay mở thành tab. |
 | Pane | Một vùng làm việc trong tab, gắn với phiên hoặc tiến trình riêng. |
 | Session | Phiên terminal/agent trên máy; có thể tồn tại độc lập với tab/client nếu runtime hỗ trợ. |
 | Identity | Bộ thông tin đăng nhập dùng lại cho nhiều host. |
@@ -24,7 +33,8 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 
 - Thêm, xem, sửa, đổi tên, sao chép cấu hình và xóa host đã lưu.
 - Lưu tên, địa chỉ, cổng, username, giao thức, identity, tags và ghi chú.
-- Nhận diện máy local; mở shell local không cần kết nối SSH.
+- Ghim **This computer** trong cây workspace và phân biệt với các host SSH. Host local có shell và project riêng. Thao tác reconnect chỉ áp dụng cho host từ xa.
+- **Host tools** dùng chung trên desktop và mobile. Chọn rõ host đích và xem trạng thái kết nối trước khi dùng **Hosts**, **SFTP**, **Keys & vaults**, **Tunnels** hoặc **Terminal tools**. Trên màn hình nhỏ có thể quay lại từ chi tiết mục về nhóm công cụ.
 - Tổ chức nhóm và nhóm lồng nhau; tìm kiếm, lọc theo tags, đánh dấu host thường dùng.
 - Kế thừa identity, kết nối, jump host và biến môi trường từ nhóm; ghi đè riêng ở host.
 - Phân biệt giá trị kế thừa với giá trị riêng; đổi nhóm không ghi đè tùy chọn riêng.
@@ -46,17 +56,21 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Ngắt kết nối, reconnect thủ công hoặc tự động theo tùy chọn; cho hủy reconnect.
 - Phân biệt lỗi mạng/DNS, timeout, xác thực, host key, proxy/jump host và thiếu quyền.
 
-## 4. Preflight và thiết lập host
+## 4. Thêm host SSH và kiểm tra môi trường
 
-- Kiểm tra OS, kiến trúc, quyền truy cập và điều kiện cần cho kết nối/session.
+- **Add host** cho tạo kết nối hoặc nhập các mục đã chọn từ cấu hình OpenSSH của máy tính. Trong chế độ nhập, xem alias, địa chỉ, cổng và IdentityFile. Mục đã có được đánh dấu. Mục nhập và mục chọn **Save host** xuất hiện dưới trạng thái chưa kết nối, chờ kiểm tra môi trường.
+- **Quick connect** điền biểu mẫu từ `user@host[:port]` hoặc địa chỉ host, gồm IPv6 đặt trong ngoặc vuông. Có thể sửa tên, địa chỉ, cổng, username, phương thức xác thực và identity. Phần nâng cao có jump host/proxy, keepalive, timeout và tùy chọn SSH. Xác thực biểu mẫu tại trường lỗi.
+- Luồng kết nối đi qua **Connection → Verify identity → Preflight → Choose environment → Ready**. Giữ dữ liệu đã nhập khi quay lại hoặc khi kết nối thất bại. Khi sai xác thực, cho chọn identity khác và thử lại. Khi fingerprint thay đổi, hiện khóa đã lưu và khóa server đưa ra trước khi người dùng quyết định thay thế.
+- Kiểm tra OS, kiến trúc, quyền truy cập và điều kiện cần cho kết nối/phiên.
 - Phát hiện shell thực sự có trên host, executable và shell đăng nhập hiện tại.
 - Chọn shell mặc định từ các shell hợp lệ: bash, zsh, fish, pwsh, cmd hoặc shell được cấu hình.
 - Lưu mặc định riêng từng host, áp dụng cho terminal mới; không đổi shell của phiên đang chạy.
 - Phát hiện agent CLI đã cài, executable, phiên bản và khả năng khởi chạy với tài khoản kết nối.
 - Phân biệt đã cài với đã đăng nhập/sẵn sàng sử dụng khi agent cho phép kiểm tra.
 - Phát hiện tmux, Herdr, phiên bản tương thích và session có sẵn.
-- Chọn dùng runtime đã có, cài tự động tmux/Herdr hoặc dùng SSH thông thường.
-- Chỉ cài khi người dùng chọn; theo dõi tiến trình, xác minh kết quả, báo lỗi và cho thử lại/đổi lựa chọn.
+- Chọn dùng runtime đã có, cài tmux hoặc Herdr Core theo yêu cầu, hoặc dùng SSH thông thường. Nêu rõ khả năng attach lại khi mất kết nối trước khi xác nhận.
+- Chỉ cài sau thao tác chủ động. Hiện tiến trình và log, kiểm tra lại phiên bản, báo thiếu quyền hoặc lỗi cài đặt. Cho thử lại, dùng runtime khác đã có hoặc tiếp tục với SSH thông thường.
+- **Ready** tóm tắt đích kết nối, shell, runtime và các agent tìm được. Chỉ mở terminal trên host sau khi hoàn tất xác minh và preflight.
 - Không tự nâng cấp runtime, thay cấu hình hoặc kết thúc session hiện hữu.
 - Chạy lại preflight khi cần; cập nhật shell/agent khả dụng sau khi môi trường thay đổi.
 
@@ -65,7 +79,9 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Thêm project bằng đường dẫn thư mục trên host; kiểm tra tồn tại và quyền truy cập.
 - Đặt tên, sửa đường dẫn, tìm/mở project gần đây và gỡ khỏi workspace.
 - Gỡ project không xóa thư mục hoặc repository trên host.
-- Phát hiện Git root và branch; thư mục không có Git vẫn dùng được.
+- Phát hiện Git root và branch. Thư mục không có Git vẫn dùng được và mở Inspector ở **Files**.
+- Hiện nguồn project **Added manually** hoặc **Discovered via Herdr**. Người dùng cũng có thể tạo project từ đường dẫn đã xem trong **Assign session**. Việc tìm thấy runtime hay phiên riêng lẻ không tự tạo project.
+- Project chưa có tab hiện trạng thái trống, tên host và đường dẫn, cùng thao tác mở terminal hoặc **New tab**.
 - Lưu đường dẫn, tab, pane, session gắn kèm và dịch vụ của project.
 - Một project chạy nhiều terminal và nhiều agent đồng thời.
 - Chuyển project rồi quay lại giữ nguyên tập tab và tab đang làm việc.
@@ -76,11 +92,14 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 
 - Tạo, chọn, đổi tên, sắp xếp và đóng tab; mỗi tab thuộc đúng host/project.
 - Chọn tab từ cây workspace hoặc danh sách tab mở cùng một nội dung/session.
-- New tab chỉ mở terminal, coding agent, web preview hoặc settings liên quan; không mở file/diff thành tab tài liệu.
-- Shell/agent trong launcher lấy từ preflight của host hiện tại; agent chưa cài không thể khởi chạy như agent khả dụng.
+- Launcher **New tab** mở terminal, coding agent hoặc web preview theo host/project hiện tại. Mở lại preview chọn tab preview đã có của project. Mục **Host settings** trong launcher dẫn tới Settings theo phạm vi host. File và diff mở trong vùng làm việc của project, ngoài hàng tab phiên.
+- **Ctrl+T** trên Windows hoặc **⌘T** trên macOS mở terminal local. Nếu đang ở project local, dùng thư mục project. Nếu đang ở project SSH, dùng project Home trên **This computer**. Để mở shell trên host đang chọn, dùng **New tab**.
+- Launcher lấy shell và agent từ môi trường của host hiện tại. Agent chưa cài bị vô hiệu hóa và có lý do.
 - Chọn shell mặc định hoặc shell khác cho riêng phiên mới; agent khởi chạy trong thư mục project.
 - Chia pane ngang/dọc, resize, chuyển focus, phóng to/khôi phục và đóng từng pane.
-- Dùng một hàng tab chung; không tạo hệ tab riêng trong mỗi pane.
+- Dùng một hàng tab chung. Desktop có thể phóng to pane đang chọn và khôi phục tỷ lệ chia đã lưu. Mobile có trình chọn tab và pane để chuyển vùng hiển thị.
+- Desktop có cây **Hosts → Projects → Tabs**, vùng **Agents** có thể thu gọn/ẩn và Inspector theo ngữ cảnh với **Files**, **Changes**, **Ports**. Có thể chuyển sidebar thành rail và mở nhanh host hoặc Agents từ rail. Lệnh **Reveal active tab** mở đúng nhánh chứa tab; đóng nhánh không ảnh hưởng phiên.
+- Lưu kích thước sidebar và Inspector theo thiết bị, tỷ lệ chia theo tab và trạng thái mở nhánh. **Reset layout** trả kích thước về mặc định và giữ các tab hiện có.
 - Lưu, đặt tên và khôi phục workspace gồm host/project, các tab/pane và ngữ cảnh khởi chạy.
 - Khôi phục ưu tiên attach session còn tồn tại; không tự chạy thêm agent do session đang mất kết nối.
 - Phân biệt đóng tab, detach session và kết thúc tiến trình; xử lý rõ tác vụ đang chạy.
@@ -102,28 +121,28 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Launcher hỗ trợ Claude Code, Codex, OpenCode và các agent CLI khác được nhận diện/cấu hình trên host.
 - Lưu executable và tham số khởi chạy; kiểm tra lại khi không tìm thấy hoặc chạy lỗi.
 - Mở nhiều phiên cùng agent hoặc nhiều loại agent trong một project, không gộp các phiên.
-- Gửi prompt, trả lời câu hỏi, xác nhận yêu cầu và interrupt trực tiếp trong terminal agent.
+- Gửi prompt, trả lời câu hỏi, xác nhận yêu cầu và interrupt trực tiếp trong terminal agent. Sau khi agent nhận câu trả lời, cập nhật phiên và bộ đếm Needs input.
 - Đăng nhập, lựa chọn model và quyền thực thi theo khả năng từng CLI; không giả định mọi agent có cùng chức năng.
-- Theo dõi trạng thái có thể xác minh: khởi chạy, làm việc, cần input, hoàn tất, lỗi, mất kết nối hoặc không rõ.
-- Thiếu tích hợp trạng thái vẫn dùng được như terminal; không suy đoán trạng thái từ tên tiến trình.
-- Tổng hợp agent cần xử lý trên nhiều host/project và chuyển đến đúng phiên.
+- Dùng chung các trạng thái công việc **Starting**, **Working**, **Needs input**, **Idle**, **Completed**, **Cancelling…**, **Cancelled**, **Failed** và **Unknown** trên danh sách Agents, tab và pane. **Completed** xác nhận công việc gần nhất đã xong và agent có thể vẫn đang chạy. Chỉ thấy tiến trình thì dùng **Unknown**. Host thiếu nguồn trạng thái vẫn có thể dùng agent qua terminal khi CLI khả dụng.
+- Theo dõi kết nối host riêng với trạng thái công việc. Khi mất kết nối, giữ hàng phiên và hiện kết quả biết gần nhất. **Needs input** dùng cùng một bộ đếm ở các màn hình. Lỗi kết nối hiển thị riêng.
+- **Agents** tổng hợp các phiên đang attach và đã detach trên mọi host. Tìm theo tên phiên, agent, host hoặc project. **All active** liệt kê phiên chưa hoàn tất/hủy, **Needs input** lọc phiên chờ trả lời, **Recent** liệt kê phiên đã hoàn tất/hủy. Đưa yêu cầu nhập và lỗi lên đầu. Chọn một hàng để focus pane hiện có hoặc attach phiên đã detach, giữ nguyên định danh phiên.
+- Khi người dùng yêu cầu hủy một công việc có thể đang chạy, hiển thị **Cancelling…** trong lúc chờ. Chỉ hiện **Cancelled** khi có xác nhận. Nếu không xác nhận được, trả về trạng thái trước và nêu lý do.
 - Thông báo khi cần input, hoàn tất hoặc lỗi theo tùy chọn; tránh lặp cùng sự kiện.
 - Mở file/thay đổi liên quan; gửi đường dẫn, đoạn mã hoặc diff cho agent khi người dùng chọn và CLI hỗ trợ.
 - Tải file/ảnh lên host để cung cấp đường dẫn cho agent; xác định vị trí lưu và kết quả tải.
 - Attach phiên còn tồn tại sau reconnect; phân biệt attach terminal với resume conversation riêng của agent.
 
-## 9. Session bền vững và vòng đời ứng dụng
+## 9. Khám phá phiên, duy trì phiên và vòng đời ứng dụng
 
-- Liệt kê session tmux/Herdr hiện hữu, xem thông tin và gắn vào project phù hợp.
-- Tạo, attach, detach, đổi tên và kết thúc session khi runtime hỗ trợ.
-- Ánh xạ session/window/pane đã có vào workspace, không nhân bản tiến trình.
-- Giữ session chạy trên host khi client detach/mất kết nối nếu runtime hỗ trợ.
-- Reconnect kiểm tra session còn tồn tại trước khi attach; nếu đã mất, cho tạo phiên mới.
-- Tiếp tục phiên từ thiết bị khác theo quyền truy cập và khả năng đa client của runtime.
-- Đóng cửa sổ desktop thu ứng dụng xuống tray; mở lại, xem phiên cần tương tác hoặc thoát hoàn toàn.
-- Khi client chạy nền, giữ kết nối/tác vụ theo thiết lập; thoát hoàn toàn xử lý forwarding, transfer và phiên local đang chạy.
-- Thoát client không tự kết thúc session remote bền vững; SSH thông thường và shell local có vòng đời khác.
-- Không cam kết tiến trình sống qua reboot host; khôi phục workspace khác với khôi phục tiến trình.
+- Inventory theo từng host liệt kê runtime, phiên tmux/Herdr, phiên bản và kết quả quét gần nhất. **Rescan** cập nhật danh sách trên host đang kết nối. Khi lỗi, hiện nguyên nhân và cho thử lại. Dùng host, runtime và ID phiên từ runtime làm định danh ổn định, kể cả khi phiên đổi tên.
+- Gợi ý project khi tất cả cửa sổ của phiên trỏ về cùng một project trên cùng host. So theo ranh giới thư mục và chọn project có đường dẫn sâu nhất. Windows chấp nhận cả dấu gạch xuôi và ngược, đồng thời so không phân biệt hoa thường. Linux phân biệt hoa thường. Dùng home của host để giải `~`, nhưng project Home không nhận phiên theo kiểu mặc định.
+- Phiên có working directory thiếu, ngoài các project, hoặc trải trên nhiều project xuất hiện trong **Unassigned** kèm lý do. **Assign session** hiện từng window và working directory để người dùng chọn project cùng host hoặc tạo project theo đường dẫn tìm được. Lưu liên kết đã xác nhận qua các lần mở lại. Việc chạy `cd` sau đó không tự chuyển phiên sang project khác.
+- Tạo, attach, detach, đổi tên và kết thúc phiên khi runtime hỗ trợ. Attach lại định danh đã mở thì chọn tab tương ứng. Mockup hiện tối đa bốn window cùng lúc dưới dạng pane, hoặc dùng trình chọn window khi phiên có nhiều hơn bốn, giữ riêng nội dung từng window khi chuyển.
+- **Session info** hiển thị host, project và nguồn project, runtime/phiên bản, ID phiên và window khi có, trạng thái attach, working directory từng pane, cùng hệ quả của việc ngắt kết nối.
+- Phiên remote qua tmux/Herdr có thể tiếp tục trên host khi client detach hoặc mất kết nối. Khi đóng tab, cho chọn **Detach** hoặc **End process** nếu runtime hỗ trợ. Shell local và SSH thông thường có vòng đời theo tiến trình hoặc kết nối tương ứng. Sau reconnect, xác minh phiên còn tồn tại trước khi attach; nếu phiên đã mất, cho mở phiên mới.
+- Tiếp tục phiên từ thiết bị khác theo quyền của người dùng và khả năng đa client của runtime. Khôi phục layout và tab lưu trên thiết bị là thao tác riêng với việc xác minh, attach hoặc khởi chạy tiến trình.
+- Desktop mặc định đóng cửa sổ xuống tray, có thể đặt nút đóng thành thoát có xác nhận. Nút thu nhỏ có thể gửi cửa sổ xuống taskbar hoặc tray. Khi ở tray, ứng dụng vẫn giữ kết nối, agent, transfer và forwarding. Khôi phục cửa sổ giữ các tab và pane.
+- Khi thoát hoàn toàn, liệt kê terminal/agent local, forwarding, transfer và phiên SSH thường bị ảnh hưởng. Phiên tmux/Herdr còn tồn tại được attach lại khi mở ứng dụng. Với host đang mất kết nối, chỉ hiển thị trạng thái đã biết lần cuối cho đến khi kiểm tra lại. Shell local cần tạo tiến trình mới. Agent local phải được người dùng khởi chạy lại. Khả năng sống qua reboot host tùy runtime và cấu hình host.
 
 ## 10. File và editor nhẹ
 
@@ -138,7 +157,8 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Phát hiện file bị sửa bên ngoài; cho reload hoặc giải quyết xung đột trước khi ghi đè.
 - Lưu remote thất bại phải giữ nội dung đang sửa; chỉ báo thành công khi host xác nhận.
 - File quá lớn/nhị phân/không hỗ trợ có lựa chọn xem thông tin hoặc tải xuống.
-- File/editor mở theo ngữ cảnh, không tạo tab tài liệu; đóng nội dung quay lại đúng phiên trước đó.
+- File/editor mở trong vùng làm việc của project. Đóng nội dung đưa người dùng về đúng phiên trước đó. Khi có nội dung chưa lưu, yêu cầu quyết định trước khi đóng.
+- Cây file hỗ trợ hiện file ẩn, giữ nhánh đã mở theo project và chỉ báo số file thay đổi dưới từng thư mục. Hiện riêng trạng thái đang tải, lỗi quyền hoặc thư mục trống.
 
 ## 11. Git changes và diff review
 
@@ -149,15 +169,15 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Xem nội dung hiện tại và phiên bản gốc; xử lý riêng file nhị phân/quá lớn.
 - Chuyển file thay đổi, mở file để sửa, sao chép đoạn diff và gửi ngữ cảnh cho agent.
 - Đóng review quay lại terminal, không tạo tab diff và không mất session.
-- Xem diff không tự commit, merge, push hoặc giải quyết conflict.
+- Xem diff không tự thay đổi repository. Cho stage/unstage và commit bằng thao tác riêng. Commit cần file đã stage và thông điệp. Giữ merge, push và giải quyết conflict là các thao tác riêng với review.
 
 ## 12. Truyền file
 
 - Mở SFTP độc lập hoặc dùng lại host đã xác thực.
-- Chọn nguồn/đích local hoặc remote, đường dẫn và chiều truyền; hỗ trợ truyền giữa các host.
+- Chọn nguồn và đích local hoặc remote, đường dẫn và chiều truyền. Hỗ trợ truyền giữa các host. Desktop hiển thị hai đầu cạnh nhau. Màn hình hẹp đi theo các bước chọn nguồn, chọn đích rồi gửi.
 - Upload/download file, thư mục và nhiều mục; kéo thả/chọn file theo khả năng thiết bị.
 - Duyệt thư mục, nhập đường dẫn, lên thư mục cha, refresh và tạo thư mục đích.
-- Tên trùng được xử lý bằng ghi đè, bỏ qua hoặc đổi tên; áp dụng một mục/cả nhóm theo lựa chọn.
+- Tên trùng được xử lý bằng **Replace**, **Skip** hoặc **Keep both**. Có thể áp dụng từng file hoặc cả nhóm theo lựa chọn. Mục chưa có quyết định tiếp tục chờ.
 - Sửa remote file và tải bản sửa lên đúng vị trí khi lưu.
 - Xem/đổi quyền khi tài khoản cho phép; báo lỗi quyền, thiếu dung lượng hoặc đích không tồn tại.
 - Giữ metadata cần thiết khi hai đầu và giao thức hỗ trợ.
@@ -184,7 +204,7 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Dynamic forwarding: cung cấp SOCKS endpoint qua SSH.
 - Cấu hình host, bind address, listen port, destination host/port và project liên quan.
 - Start/stop từng quy tắc; tùy chọn tự chạy khi kết nối và phục hồi sau reconnect.
-- Kiểm tra cổng không hợp lệ/đang dùng, thiếu quyền bind và server từ chối forwarding.
+- Kiểm tra cổng không hợp lệ/đang dùng, thiếu quyền bind và server từ chối forwarding. Khi cổng bận, báo tiến trình đang chiếm cổng nếu xác định được, gợi ý cổng rảnh hoặc cho nhập cổng khác.
 - Phân biệt cấu hình đã lưu, tunnel hoạt động, tunnel lỗi và dịch vụ đích không phản hồi.
 - Đổi cấu hình đang chạy cần thao tác áp dụng/restart rõ ràng.
 - Không tự bind ra mọi interface khi người dùng chỉ yêu cầu truy cập trên thiết bị hiện tại.
@@ -267,7 +287,7 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Phân quyền quản trị, chỉnh sửa và sử dụng/xem theo vault.
 - Chia sẻ host, cấu hình và snippets có/không credential theo chính sách.
 - Thu hồi truy cập ngăn sử dụng mới và xử lý phiên chia sẻ; không hứa thu hồi dữ liệu đã sao chép ra ngoài.
-- Mời chia sẻ live terminal với thời hạn và quyền xem/điều khiển.
+- Mời chia sẻ live terminal theo người tham gia hoặc qua liên kết có thời hạn. Liên kết mặc định chỉ cho xem. Vai trò có thể yêu cầu quyền điều khiển chỉ được gửi input sau khi chủ phiên cấp quyền.
 - Theo dõi người tham gia, kết nối và người giữ quyền nhập.
 - Một người điều khiển tại một thời điểm; yêu cầu, cấp, chuyển và thu hồi quyền nhập.
 - Chủ phiên lấy lại quyền, ngắt người tham gia hoặc dừng chia sẻ.
@@ -287,21 +307,35 @@ Tài liệu mô tả chức năng và quy tắc hoạt động cần có của s
 - Export host, nhóm, snippets và workspace; không mặc định xuất credential dạng rõ.
 - Import/export không tự kết nối, chạy lệnh hoặc cài phần mềm lên host vừa nhập.
 
-## 23. Desktop, mobile và tùy chọn ứng dụng
+## 23. Desktop và mobile
 
-- Cùng phạm vi chức năng: host/project/session, agent, file/editor/diff, transfer, forwarding, vault và cộng tác.
-- Chức năng phụ thuộc phần cứng/OS phải kiểm tra khả dụng và thông báo giới hạn cụ thể.
-- Mobile có phím terminal bổ trợ, copy/paste, nhập prompt dài, chọn file/ảnh và voice input khi thiết bị hỗ trợ.
-- Khi mobile bị hệ điều hành đình chỉ, giữ trạng thái và reconnect/reattach khi quay lại; không giả định socket luôn chạy nền.
-- Phân biệt tác vụ tiếp tục trên host với tác vụ cần client hoạt động, như truyền file từ thiết bị và forward local.
-- Tìm kiếm nhanh và command palette cho host/project/tab, thao tác và cấu hình.
-- Cấu hình phím tắt, terminal preferences, thông báo, mặc định kết nối, lưu history/logs và hành vi đóng ứng dụng.
-- Kiểm tra/cài cập nhật theo lựa chọn; xử lý tác vụ đang chạy trước khi restart ứng dụng.
+- Desktop và mobile dùng cùng cấu trúc host/project/phiên và hỗ trợ truy cập agent, file/editor/diff, transfer, forwarding, vault và cộng tác theo khả năng thiết bị. Chức năng phụ thuộc phần cứng hoặc hệ điều hành phải nêu điều kiện sử dụng.
+- Mobile là client cho phiên chạy trên máy tính hoặc host từ xa, không có shell native trên điện thoại. Thanh điều hướng có **Terminal**, **Files**, **Changes**, **Agents** và **More**. Ports/forwarding, transfer, preview, Settings, thêm host và chia sẻ phiên đi qua More. Thanh trên cùng mở cây host, trình chọn pane và launcher.
+- Mobile có phím terminal bổ trợ và vùng soạn prompt dài. Vùng soạn hiển thị host và project đích trước khi gửi vào pane đang chọn. Hỗ trợ copy/paste, chọn file/ảnh và voice input khi thiết bị hỗ trợ.
+- Khi mobile bị hệ điều hành đình chỉ, giữ trạng thái và reconnect/reattach khi quay lại. Phân biệt tiến trình trên host với các tác vụ cần client hoạt động như truyền file từ thiết bị và forward local.
+- Command palette tìm host, project, tab, agent, thao tác và cấu hình. Khi chưa nhập, ưu tiên mục gần đây nếu có. Kết quả hiện host và đường dẫn riêng với tên project, nêu lý do khi lệnh không khả dụng.
 
-## 24. Quy tắc xử lý chung
+## 24. Settings và cập nhật
+
+- **Settings** mở từ menu ứng dụng, command palette, phím tắt hoặc mục cấu hình host. Nút **Host settings** của launcher mở nhóm Terminal theo phạm vi host hiện tại trong cùng hộp Settings. Host tools có phần quản lý cấu hình kết nối đã lưu.
+- Tìm theo tên thiết lập, từ khóa hoặc nhóm. Các nhóm gồm giao diện, workspace, terminal, kết nối, agent/phiên, file/transfer, thông báo, phím tắt, bảo mật/vault/sync, history/recordings, cập nhật và chẩn đoán. **System** theo chế độ sáng/tối của hệ điều hành. Font giao diện và terminal có tùy chọn riêng; báo khi thiết bị phải dùng font dự phòng.
+- Phạm vi **App** là giá trị chung. Thiết lập hỗ trợ phạm vi **Host** kế thừa giá trị App hoặc cho chọn **Override**; bỏ ghi đè sẽ dùng lại giá trị App. Chỉ rõ giá trị lấy từ đâu và thiết lập nào chỉ áp dụng toàn ứng dụng hoặc theo thiết bị. Khôi phục mặc định theo nhóm và phạm vi đang chọn, giữ tùy chọn ngoài phạm vi đó.
+- Nêu thời điểm có hiệu lực: ngay, sau **Apply**, ở phiên mới, sau reconnect hoặc sau restart. Hủy thao tác khi còn chỉnh sửa chờ áp dụng phải giữ hoặc bỏ theo lựa chọn của người dùng. Phím tắt theo nền tảng, cho sửa, khôi phục mặc định và báo tên lệnh bị trùng.
+- Cập nhật ứng dụng và phần phụ thuộc trên host là hai thao tác riêng. Với ứng dụng, cho kiểm tra phiên bản, xem ghi chú, tải, thấy tiến độ/lỗi và thử lại. Sau tải, cho hoãn hoặc xác nhận khởi động lại với danh sách phiên và tác vụ bị ảnh hưởng.
+- Với host, hiển thị trạng thái, phiên bản, thời điểm kiểm tra, nguồn, yêu cầu quyền và khả năng tương thích cho tmux/Herdr. Lỗi kiểm tra giữ dữ liệu biết gần nhất và khác với chưa cài. Cài/cập nhật chỉ chạy theo yêu cầu ở host được chọn. Phiên đang chạy cần hiện tác động và lựa chọn hoãn hoặc tiếp tục. Hiện log, kiểm tra kết quả và chỉ dẫn cài thủ công khi nguồn hoặc quyền yêu cầu. Khi ứng dụng không quản lý cách cài agent CLI, nêu cách cập nhật phù hợp với nguồn cài hiện tại.
+- Chẩn đoán hiện phiên bản, môi trường và thông tin kết nối cần cho hỗ trợ. Lọc địa chỉ, username và secrets khỏi dữ liệu chia sẻ theo mặc định.
+
+## 25. Quy tắc xử lý chung
 
 - Cấu hình đã lưu, kết nối client, tiến trình remote và tác vụ đang chạy có trạng thái riêng.
-- Ghi đè/xóa dữ liệu, kết thúc tiến trình, đổi quyền hoặc chạy lệnh nhiều đích phải xác định rõ phạm vi tác động.
+- Ghi đè/xóa dữ liệu, kết thúc tiến trình, đổi quyền hoặc chạy lệnh nhiều đích phải xác định rõ phạm vi tác động. Khi nhận diện lệnh có tác động lớn trên host production, hiện lệnh và project đích rồi yêu cầu xác nhận bằng tên host.
 - Mất mạng/quyền phải giữ dữ liệu chưa lưu và báo nguyên nhân; không báo thao tác lỗi là đã hoàn tất.
 - Xem file/diff, đổi project, đóng preview và thu gọn queue không tự chạy lệnh hay sửa dữ liệu host.
 - Không tự cấp thêm quyền cho agent, điều phối agent hoặc quản lý Git worktree thay người dùng.
+
+## Phạm vi bản xem trước trong trình duyệt
+
+- Bản xem trước dùng dữ liệu mẫu và mô hình trạng thái trong trình duyệt. Phần terminal và phản hồi agent là mô phỏng. Các trạng thái tray, attach, reconnect và quit minh họa vòng đời ứng dụng native. Workspace, một số thiết lập, layout và liên kết phiên đã xác nhận được lưu bằng bộ nhớ trình duyệt với luồng lưu workspace trên desktop. Việc nạp lại dữ liệu này chỉ khôi phục trạng thái giao diện.
+- Add host, kiểm tra fingerprint/preflight, nhập SSH config, khám phá runtime và cài/cập nhật dùng kịch bản mẫu. Biểu mẫu cho thấy các lựa chọn kết nối. Mockup chỉ chuyển một phần trường vào bản ghi host và danh sách SSH config là dữ liệu mẫu. Một số tùy chọn Settings mới có giao diện hoặc lưu giá trị.
+- Đọc/ghi file, stage/commit Git, truyền SFTP, forwarding, web preview và cập nhật ứng dụng minh họa thao tác, tiến độ và lỗi với dữ liệu mẫu. Keys/vault mô phỏng mở khóa và trạng thái đồng bộ. Giao diện bảo mật mô tả private key nằm trong vault và được loại khỏi sync. Chia sẻ phiên mô phỏng lời mời, người tham gia, quyền nhập và reconnect. Các luồng này chưa xác minh hoạt động với hệ thống bên ngoài.
+- Mobile là giao diện cảm ứng dùng chung dữ liệu mẫu. Thanh **Prototype** nằm ngoài màn hình ứng dụng để đổi thiết bị, nền tảng, theme, kịch bản và đặt lại dữ liệu. `This computer` trong mô phỏng mobile đại diện cho máy tính của người dùng.
